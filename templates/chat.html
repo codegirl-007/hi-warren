@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GPT Chat</title>
+  <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/htmx-ext-ws@2.0.2" integrity="sha384-vuKxTKv5TX/b3lLzDKP2U363sOAoRo5wSvzzc3LJsbaQRSBSS+3rKKHcOx5J8doU" crossorigin="anonymous"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+    }
+    #messages {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      height: 300px;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+    }
+    form {
+      display: flex;
+      gap: 0.5rem;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 0.5rem;
+    }
+  </style>
+
+
+</head>
+<body>
+<script>
+  const realWS = WebSocket;
+  WebSocket = function (...args) {
+    const ws = new realWS(...args);
+    ws.addEventListener("message", (e) => {
+      console.log("🔥 Raw WS message:", e.data);
+    });
+    return ws;
+  };
+</script>
+  <h1>Chat with GPT</h1>
+
+  <!-- WebSocket-connected chat window -->
+  <div id="messages"
+       hx-ext="ws"
+       ws-connect="/ws"
+       hx-swap="beforeend">
+      {{ .Greeting }}
+  </div>
+
+  <!-- Form to send messages to GPT -->
+  <form hx-post="/send" hx-target="#messages" hx-swap="beforeend" hx-on::after-request="if(event.detail.successful) this.reset()">
+    <input type="text" name="message" placeholder="Say something..." required />
+    <button type="submit">Send</button>
+  </form>
+
+</body>
+</html>
+
